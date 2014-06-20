@@ -57,6 +57,7 @@ var my_store = new FileStore({
   // Default value = 3
   max_backups: 3,
 });
+```
 
 ## Notes
 All saves happen asynchronously, so if your program is entirely synchronous, no
