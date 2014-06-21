@@ -15,7 +15,7 @@ Features:
 * rate-limited background flushing
 
 ## Getting Started
-(Once live on NPM): Install the module with: `npm install fs-store`
+Install the module with: `npm install fs-store`
 
 Non-NPM install: Save index.js as fs-store.js and instead use `require('./fs-store.js')`
 
