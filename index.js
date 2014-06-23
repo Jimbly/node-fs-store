@@ -40,6 +40,7 @@ function FileStore(options) {
   assert.ok(this.base_path);
   this.min_save_interval = options.min_save_interval || 1000; // Save at most once a second
   this.max_backups = options.max_backups || 3;
+  this.read_only = options.read_only || false;
 
   this.writing = false;
   this.needs_write = false;
@@ -101,7 +102,7 @@ FileStore.prototype.save = function () {
     return;
   }
   var data = JSON.stringify(self.data_store, undefined, 2);
-  if (data === self.last_saved_data_store) {
+  if (data === self.last_saved_data_store || self.read_only) {
     self.needs_write = false;
     callOnFlushCbs(self);
     return;

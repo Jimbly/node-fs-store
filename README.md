@@ -56,6 +56,13 @@ var my_store = new FileStore({
   // Maximum number of additional backups to keep.  Must be >= 1
   // Default value = 3
   max_backups: 3,
+
+  // Set read_only to true to disable writes to disk (in-memory
+  // changes to the store will still work as usual).  May be useful
+  // when (cluster.isWorker && cluster.worker.id !== 1) and all cluster
+  // members are doing the exact same logic on the store.
+  // Default value = false;
+  read_only: true,
 });
 ```
 
