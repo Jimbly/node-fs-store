@@ -59,6 +59,26 @@ var my_store = new FileStore({
 });
 ```
 
+## API Reference
+
+#### new FileStore(options)
+Creates a FileStore and synchronously loads the store from disk or a backup if the primary file is unable to be loaded for any reason.  See "Advanced Configuration" above for details on the options parameter.
+
+### store.set(key, value)
+Sets a value in the store, queues up an asynchronous save to disk.
+
+### store.get(key, [default_value])
+Returns a value from the store, or the provided default_value if no value has previously been set with that key.
+
+### store.getStore()
+This should almost never be needed.  Returns that storage object for the store for direct modifications or iteration.  If any changes are made, you must manually call `store.save` when you are done.  In theory this could be used to very efficiently make a bunch of changes, but, if you need that much efficiency, you probably should not be using a stupid-simple on-disk store like this.
+
+### store.save()
+Manually trigger a save of the store (after making modifications through store.getStore()).
+
+### store.onFlush(cb)
+Calls cb after any changes have been flushed to disk.  Callback will always be called asynchronously even if nothing is waiting to be flushed to disk.  This has very little general use, but is invaluable in writing deterministic unit tests.
+
 ## Notes
 All saves happen asynchronously, so if your program is entirely synchronous, no
 data will be saved until the main part of the program exits (at which point it
