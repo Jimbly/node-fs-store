@@ -44,6 +44,7 @@ function FileStore(options) {
   this.writing = false;
   this.needs_write = false;
   this.last_saved_data_store = '';
+  this.on_flush = [];
   function tryFile(retries) {
     var filename = self.filePath(retries);
     var data;
@@ -66,6 +67,14 @@ function FileStore(options) {
   this.data_store = tryFile(0);
 }
 
+FileStore.prototype.onFlush = function (cb) {
+  var self = this;
+  if (!self.writing && !self.needs_write) {
+    return setImmediate(cb);
+  }
+  self.on_flush.push(cb);
+};
+
 FileStore.prototype.filePath = function (retries) {
   if (!retries) {
     return this.base_path;
@@ -73,6 +82,17 @@ FileStore.prototype.filePath = function (retries) {
     return this.base_path + '.' + (retries-1) + '.bak';
   }
 };
+
+function callOnFlushCbs(self) {
+  if (!self.on_flush.length) {
+    return;
+  }
+  var cbs = self.on_flush;
+  self.on_flush = [];
+  for (var ii = 0; ii < cbs.length; ++ii) {
+    cbs[ii]();
+  }
+}
 
 FileStore.prototype.save = function () {
   var self = this;
@@ -82,6 +102,8 @@ FileStore.prototype.save = function () {
   }
   var data = JSON.stringify(self.data_store, undefined, 2);
   if (data === self.last_saved_data_store) {
+    self.needs_write = false;
+    callOnFlushCbs(self);
     return;
   }
   self.last_saved_data_store = data;
@@ -123,6 +145,11 @@ FileStore.prototype.save = function () {
             self.save();
           }
         }, self.min_save_interval);
+        // Calling on_flush callbacks immediately, not after min_save_interval,
+        // unless there's more data queued up to be written.
+        if (!self.needs_write) {
+          callOnFlushCbs(self);
+        }
       });
     });
   });

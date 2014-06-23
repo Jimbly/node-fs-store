@@ -27,3 +27,5 @@ node_modules
 # From example program
 example_data.json
 example_data.json.*
+test_data.json
+test_data.json.*
