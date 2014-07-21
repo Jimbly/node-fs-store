@@ -110,9 +110,29 @@ FileStore.prototype.save = function () {
   self.last_saved_data_store = data;
   self.writing = true;
   self.needs_write = false;
+
+  function queueNextSave() {
+    setTimeout(function () {
+      self.writing = false;
+      if (self.needs_write) {
+        self.save();
+      }
+    }, self.min_save_interval);
+    // Calling on_flush callbacks immediately, not after min_save_interval,
+    // unless there's more data queued up to be written.
+    if (!self.needs_write) {
+      callOnFlushCbs(self);
+    }
+  }
+  function handleError(err) {
+    // Queue up the next save so we don't leave ourselves in a broken state, in
+    // case the error is caught by a global handler/domain handler/etc
+    queueNextSave();
+    throw err;
+  }
   fs.writeFile(self.base_path + '.tmp', data, function(err) {
     if (err) {
-      throw err;
+      return handleError(err);
     }
     function removeBackup(retries, next) {
       // TODO: Could add rules here so that we delete if the time delta between
@@ -138,19 +158,9 @@ FileStore.prototype.save = function () {
       }
       fs.rename(self.base_path + '.tmp', self.base_path, function(err) {
         if (err) {
-          throw err;
+          return handleError(err);
         }
-        setTimeout(function () {
-          self.writing = false;
-          if (self.needs_write) {
-            self.save();
-          }
-        }, self.min_save_interval);
-        // Calling on_flush callbacks immediately, not after min_save_interval,
-        // unless there's more data queued up to be written.
-        if (!self.needs_write) {
-          callOnFlushCbs(self);
-        }
+        queueNextSave();
       });
     });
   });
