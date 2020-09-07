@@ -29,3 +29,5 @@ example_data.json
 example_data.json.*
 test_data.json
 test_data.json.*
+
+*.sublime-workspace

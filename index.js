@@ -116,6 +116,10 @@ FileStore.prototype.save = function () {
       self.writing = false;
       if (self.needs_write) {
         self.save();
+      } else {
+        // Also call on_flush callbacks here, in case they were queued up during
+        // this timeout interval
+        callOnFlushCbs(self);
       }
     }, self.min_save_interval);
     // Calling on_flush callbacks immediately, not after min_save_interval,
