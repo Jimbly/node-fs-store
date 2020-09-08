@@ -10,9 +10,9 @@ full-fledged database or something similar.
 Features:
 * multiple backups
 * robust failure recovery
-* single async load
+* single sync load
 * in-memory cache (effectively synchronous API)
-* rate-limited background flushing
+* rate-limited background (async) flushing
 
 ## Getting Started
 Install the module with: `npm install fs-store`
