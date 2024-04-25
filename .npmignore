@@ -1,8 +1,10 @@
 *.sublime-project
 *.sublime-workspace
 tests/*
-test_data.json
+test_data.json*
 example.js
+thrash.js
 .jshintrc
 .eslintrc
 .editorconfig
+example_data.json*
