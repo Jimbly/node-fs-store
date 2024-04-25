@@ -1,6 +1,6 @@
 {
   "name": "fs-store",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "File system backed store for node with a trivial interface, multiple backups, robust failure recovery, single async load, in-memory cache (effectively synchronous API), background flushing.",
   "main": "index.js",
   "scripts": {

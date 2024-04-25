@@ -95,6 +95,35 @@ function callOnFlushCbs(self) {
   }
 }
 
+var MAX_RETRIES = 5;
+function unlinkWithRetry(filename, next) {
+  var retries = 0;
+  function doit() {
+    fs.unlink(filename, function (err) {
+      if (!err || retries === MAX_RETRIES) {
+        return next(err);
+      }
+      ++retries;
+      setTimeout(doit, retries * retries * 100);
+    });
+  }
+  doit();
+}
+
+function renameWithRetry(src, dest, next) {
+  var retries = 0;
+  function doit() {
+    fs.rename(src, dest, function (err) {
+      if (!err || retries === MAX_RETRIES) {
+        return next(err);
+      }
+      ++retries;
+      setTimeout(doit, retries * retries * 100);
+    });
+  }
+  doit();
+}
+
 FileStore.prototype.save = function () {
   var self = this;
   if (self.writing) {
@@ -148,10 +177,10 @@ FileStore.prototype.save = function () {
         }
         if (retries === self.max_backups) {
           // just remove
-          fs.unlink(filename, next);
+          unlinkWithRetry(filename, next);
         } else {
           removeBackup(retries+1, function () {
-            fs.rename(filename, self.filePath(retries + 1), next);
+            renameWithRetry(filename, self.filePath(retries + 1), next);
           });
         }
       });
@@ -160,7 +189,7 @@ FileStore.prototype.save = function () {
       if (err) {
         console.log('Error removing backup:', err);
       }
-      fs.rename(self.base_path + '.tmp', self.base_path, function(err) {
+      renameWithRetry(self.base_path + '.tmp', self.base_path, function(err) {
         if (err) {
           return handleError(err);
         }
